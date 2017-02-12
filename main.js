@@ -2,17 +2,18 @@ var roleHarvester = require('role.harvester')
 var roleUpgrader = require('role.upgrader')
 var roleBuilder = require('role.builder')
 var roleClaimer = require('role.claimer')
+var roleRecycle = require('role.recycle')
 
 module.exports.loop = function() {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
       delete Memory.creeps[name];
-      console.log('Clearing non-existing creep memory:', name);
+      // console.log('Clearing non-existing creep memory:', name);
     }
   }
 
-  var desired_harvesters = 5;
-  var desired_upgraders = 5;
+  var desired_harvesters = 10;
+  var desired_upgraders = 2;
   var desired_builders = 5;
   var desired_claimers = 0;
 
@@ -20,7 +21,14 @@ module.exports.loop = function() {
   var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
   var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
   var claimers = _.filter(Game.creeps, (creep) => creep.memory.role == 'claimer');
-  console.log('Harvesters: ' + harvesters.length + ' Upgraders: ' + upgraders.length + ' Builders: ' + builders.length + ' Claimers: ' + claimers.length);
+
+  var msg = '';
+  msg += (desired_harvesters > 0) ? 'Harvesters: ' + harvesters.length + ' ' : '';
+  msg += (desired_upgraders > 0) ? 'Upgraders: ' + upgraders.length + ' ' : '';
+  msg += (desired_builders > 0) ? 'Builders: ' + builders.length + ' ' : '';
+  msg += (desired_claimers > 0) ? 'Claimers: ' + claimers.length + ' ' : '';
+  console.log(msg);
+
 
   var need_harvester = harvesters.length < desired_harvesters;
   var need_upgrader = upgraders.length < desired_upgraders;
@@ -30,16 +38,14 @@ module.exports.loop = function() {
   var newName;
   if (need_harvester) {
     if (harvesters.length < desired_harvesters) {
-      newName = Game.spawn.CylSpawn.createCreep([WORK, WORK, WORK, CARRY, MOVE], undefined, {
-        role: 'harvester'
-      });
+      roleHarvester.build()
     }
     if (harvesters.length < desired_harvesters) {
       newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE], undefined, {
         role: 'harvester'
       });
     }
-    console.log('Spawning new harvester: ' + newName);
+    // console.log('Spawning new harvester: ' + newName);
 
   } else if (need_upgrader) {
     if (upgraders.length >= 1) {
@@ -51,25 +57,24 @@ module.exports.loop = function() {
         role: 'upgrader'
       });
     }
-    console.log('Spawning new upgrader: ' + newName);
+    // console.log('Spawning new upgrader: ' + newName);
 
   } else if (need_builder) {
     if (builders.length >= 1) {
-      newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, CARRY, CARRY, MOVE], undefined, {
-        role: 'builder'
-      });
+      roleBuilder.build()
+
     } else {
       newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE], undefined, {
         role: 'builder'
       });
     }
-    console.log('Spawning new builder: ' + newName);
+    // console.log('Spawning new builder: ' + newName);
 
   } else if (need_claimer) {
     newName = Game.spawns.CylSpawn.createCreep([CLAIM, CLAIM, CLAIM, MOVE, MOVE], undefined, {
       role: 'claimer'
     });
-    console.log('Spawning new claimer: ' + newName);
+    // console.log('Spawning new claimer: ' + newName);
 
   }
 
@@ -97,6 +102,9 @@ module.exports.loop = function() {
     }
     if (creep.memory.role == 'claimer') {
       roleClaimer.run(creep);
+    }
+    if (creep.memory.role == 'recycle') {
+      roleRecycle.run(creep);
     }
   }
 }

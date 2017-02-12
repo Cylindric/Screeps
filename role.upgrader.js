@@ -3,6 +3,13 @@ var roleUpgrader = {
   /** @param {Creep} creep **/
   run: function(creep) {
 
+    creep.room.visual.circle(creep.pos, {
+      stroke: '#ffff00',
+      fill: '',
+      opacity: 0.5,
+      radius: 0.25
+    })
+
     if (creep.memory.upgrading && creep.carry.energy === 0) {
       creep.memory.upgrading = false;
       creep.say('🔄 harvest');
@@ -46,18 +53,44 @@ var roleUpgrader = {
         });
       }
     } else {
-      var sources = creep.room.find(FIND_SOURCES);
-      var target_id = sources.length - 1;
+      target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: (structure) => {
+          return (
+            structure.structureType == STRUCTURE_CONTAINER ||
+            (
+              structure.structureType == STRUCTURE_SPAWN
+            ) && structure.energy > 0);
+        }
+      })
 
-      if (creep.harvest(sources[target_id]) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(sources[target_id], {
-          visualizePathStyle: {
-            stroke: '#ffaa00'
-          }
-        });
+      if (target !== null) {
+        // Found a storage structure
+        var result = creep.withdraw(target, RESOURCE_ENERGY)
+        if (result == ERR_NOT_IN_RANGE) {
+          creep.moveTo(target, {
+            visualizePathStyle: {
+              stroke: '#ffaa00'
+            }
+          });
+        } else {
+          creep.say(_.sum(creep.carry) + '/' + creep.carryCapacity);
+        }
       } else {
-        creep.say(_.sum(creep.carry) + '/' + creep.carryCapacity);
+        // Did not find a storage structure
+        target = creep.pos.findClosestByPath(FIND_SOURCES)
+        if (target !== null) {
+          if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(target, {
+              visualizePathStyle: {
+                stroke: '#ffaa00'
+              }
+            });
+          } else {
+            creep.say(_.sum(creep.carry) + '/' + creep.carryCapacity);
+          }
+        }
       }
+
     }
   }
 };
