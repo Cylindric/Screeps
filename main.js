@@ -3,6 +3,7 @@ var roleUpgrader = require('role.upgrader')
 var roleBuilder = require('role.builder')
 var roleClaimer = require('role.claimer')
 var roleRecycle = require('role.recycle')
+var roleRepairer = require('role.repairer')
 
 module.exports.loop = function() {
   for (var name in Memory.creeps) {
@@ -12,20 +13,23 @@ module.exports.loop = function() {
     }
   }
 
-  var desired_harvesters = 10;
-  var desired_upgraders = 2;
-  var desired_builders = 5;
+  var desired_harvesters = 4;
+  var desired_upgraders = 1;
+  var desired_builders = 3;
   var desired_claimers = 0;
+  var desired_repairers = 1;
 
   var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
   var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
   var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
   var claimers = _.filter(Game.creeps, (creep) => creep.memory.role == 'claimer');
+  var repairers = _.filter(Game.creeps, (creep) => creep.memory.role == 'repairer');
 
   var msg = '';
   msg += (desired_harvesters > 0) ? 'Harvesters: ' + harvesters.length + ' ' : '';
   msg += (desired_upgraders > 0) ? 'Upgraders: ' + upgraders.length + ' ' : '';
   msg += (desired_builders > 0) ? 'Builders: ' + builders.length + ' ' : '';
+  msg += (desired_repairers > 0) ? 'Repairers: ' + repairers.length + ' ' : '';
   msg += (desired_claimers > 0) ? 'Claimers: ' + claimers.length + ' ' : '';
   console.log(msg);
 
@@ -34,6 +38,7 @@ module.exports.loop = function() {
   var need_upgrader = upgraders.length < desired_upgraders;
   var need_builder = builders.length < desired_builders;
   var need_claimer = claimers.length < desired_claimers;
+  var need_repairer = repairers.length < desired_repairers;
 
   var newName;
   if (need_harvester) {
@@ -76,6 +81,8 @@ module.exports.loop = function() {
     });
     // console.log('Spawning new claimer: ' + newName);
 
+  } else if (need_repairer) {
+    roleRepairer.build()
   }
 
   if (Game.spawns.CylSpawn.spawning) {
@@ -105,6 +112,9 @@ module.exports.loop = function() {
     }
     if (creep.memory.role == 'recycle') {
       roleRecycle.run(creep);
+    }
+    if (creep.memory.role == 'repairer') {
+      roleRepairer.run(creep);
     }
   }
 }

@@ -1,12 +1,14 @@
-const HARVESTER_IDLE = 'idle';
-const HARVESTER_CHARGING = 'charging';
-const HARVESTER_DELIVER = 'delivering';
+const REPAIRER_IDLE = 'idle';
+const REPAIRER_CHARGING = 'charging';
+const REPAIRER_REPAIRING = 'repairing';
 
-var roleHarvester = {
+var actions = require('actions')
+
+var roleRepairer = {
 
   build: function() {
-    newName = Game.spawns.CylSpawn.createCreep([WORK, WORK, WORK, CARRY, MOVE], undefined, {
-      role: 'harvester'
+    newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE, MOVE], undefined, {
+      role: 'repairer'
     });
 
     return newName
@@ -15,36 +17,43 @@ var roleHarvester = {
   /** @param {Creep} creep **/
   run: function(creep) {
 
+    creep.room.visual.circle(creep.pos, {
+      stroke: '#00ff00',
+      fill: '',
+      opacity: 0.5,
+      radius: 0.25
+    })
+
     // Ensure sensible defaults
-    creep.memory.vis = (creep.memory.vis === undefined) ? false : creep.memory.vis;
-    creep.memory.state = (creep.memory.state === undefined) ? HARVESTER_IDLE : creep.memory.state;
+    creep.memory.vis = (creep.memory.vis === undefined) ? true : creep.memory.vis;
+    creep.memory.state = (creep.memory.state === undefined) ? REPAIRER_IDLE : creep.memory.state;
     creep.memory.target_id = (creep.memory.target_id === undefined) ? null : creep.memory.target_id;
     creep.memory.energy_id = (creep.memory.energy_id === undefined) ? null : creep.memory.energy_id;
 
     /* Valid transitions
     IDLE -> IDLE
     IDLE -> CHARGING
-    IDLE -> DELIVER
-    CHARGING -> IDLE
+    IDLE -> REPAIRING
+    REPAIRIN -> IDLE
     */
 
     // If we aren't doing anything, and need charging, might as well charge up.
     switch (creep.memory.state) {
-      case HARVESTER_IDLE:
+      case REPAIRER_IDLE:
         if (creep.carry.energy < creep.carryCapacity) {
-          creep.memory.state = HARVESTER_CHARGING
+          creep.memory.state = REPAIRER_CHARGING
         } else {
-          creep.memory.state = HARVESTER_DELIVER
+          creep.memory.state = REPAIRER_REPAIRING
         }
         break;
-      case HARVESTER_DELIVER:
+      case REPAIRER_REPAIRING:
         if (creep.carry.energy === 0) {
-          creep.memory.state = HARVESTER_CHARGING
+          creep.memory.state = REPAIRER_CHARGING
         }
         break;
-      case HARVESTER_CHARGING:
+      case REPAIRER_CHARGING:
         if (creep.carry.energy === creep.carryCapacity) {
-          creep.memory.state = HARVESTER_IDLE;
+          creep.memory.state = REPAIRER_IDLE;
         }
         break;
     }
@@ -73,54 +82,51 @@ var roleHarvester = {
     }
 
     switch (creep.memory.state) {
-      case HARVESTER_DELIVER:
-
-        if (creep.memory.target_id === null) {
-          target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: (structure) => {
-              return (
-                // structure.structureType == STRUCTURE_CONTAINER ||
-                (structure.structureType == STRUCTURE_EXTENSION ||
-                  structure.structureType == STRUCTURE_SPAWN ||
-                  structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity);
-            }
-          })
-
-          if (target === null) {
-            // could not find any structures with available space.
-            return;
-          }
-
-          creep.memory.target_id = target.id
-          console.log(creep.name + ": set new target " + creep.memory.target_id)
-        }
-
-        var result = creep.transfer(target, RESOURCE_ENERGY);
-        switch (result) {
-          case OK:
-            creep.say('⚡')
-            break;
-          case ERR_FULL:
-            console.log(creep.name + ": target full")
-            creep.memory.target_id = null
-            break;
-          case ERR_INVALID_TARGET:
-            console.log(creep.name + ": invalid target")
-            creep.memory.target_id = null
-            break;
-          case ERR_NOT_IN_RANGE:
-            creep.moveTo(target, {
-              visualizePathStyle: {
-                stroke: '#ffaa00'
-              }
-            });
-            break;
-
-        }
-
+      case REPAIRER_REPAIRING:
+        actions.repair(creep)
+        // if (creep.memory.target_id === null) {
+        //   target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        //     filter: (structure) => {
+        //       return (
+        //         structure.hits < structure.hitsMax);
+        //     }
+        //   })
+        //
+        //   if (target === null) {
+        //     // could not find any structures with available space.
+        //     return;
+        //   }
+        //
+        //   creep.memory.target_id = target.id
+        //   console.log(creep.name + ": set new target " + creep.memory.target_id)
+        // }
+        //
+        // var result = creep.repair(target);
+        // switch (result) {
+        //   case OK:
+        //     var progress = Math.floor((target.hits / target.hitsMax) * 100)
+        //     creep.say('🔧 ' + progress + '%')
+        //     if (target.hits >= target.hitsMax) {
+        //       creep.memory.state = REPAIRER_IDLE;
+        //     }
+        //     break;
+        //   case ERR_INVALID_TARGET:
+        //     console.log(creep.name + ": invalid target")
+        //     creep.memory.target_id = null
+        //     break;
+        //   case ERR_NOT_IN_RANGE:
+        //     creep.moveTo(target, {
+        //       visualizePathStyle: {
+        //         stroke: '#ffaa00'
+        //       }
+        //     });
+        //     break;
+        //
+        // }
+        //
         break;
 
-      case HARVESTER_CHARGING:
+      case REPAIRER_CHARGING:
         creep.memory.target_id = null;
 
         if (creep.memory.energy_id === null) {
@@ -158,4 +164,4 @@ var roleHarvester = {
   }
 }
 
-module.exports = roleHarvester
+module.exports = roleRepairer
