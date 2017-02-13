@@ -45,6 +45,20 @@ module.exports.loop = function() {
     var need_repairer = repairers.length < desired_repairers;
     var need_courier = couriers.length < desired_couriers;
 
+    // Don't need couriers if we don't have containers
+    if (need_courier) {
+        var containers = Game.spawns.CylSpawn.room.find(FIND_MY_STRUCTURES, {
+            filter: {
+                structureType: STRUCTURE_CONTAINER
+            }
+        });
+        if (containers.length === 0) {
+            need_courier = false;
+        }
+    }
+
+
+
     var newName;
     if (need_harvester) {
         if (harvesters.length < desired_harvesters) {
