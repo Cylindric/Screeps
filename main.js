@@ -79,16 +79,9 @@ module.exports.loop = function() {
             roleCourier.build()
         }
     } else if (need_upgrader) {
-        if (upgraders.length >= 1) {
-            newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE, MOVE, MOVE], undefined, {
-                role: 'upgrader'
-            });
-        } else {
-            newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE], undefined, {
-                role: 'upgrader'
-            });
-        }
-        // console.log('Spawning new upgrader: ' + newName);
+        newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE], undefined, {
+            role: 'upgrader'
+        });
 
     } else if (need_builder) {
         if (builders.length >= 1) {

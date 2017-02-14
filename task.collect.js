@@ -16,7 +16,7 @@ var taskCollect = {
             })
 
             if (pickup === null) {
-                console.log(creep.name + ' could not find pickup with at least ' + space + ' energy.')
+                // console.log(creep.name + ' could not find pickup with at least ' + space + ' energy.')
                 return;
             }
             creep.memory.pickup_id = pickup.id

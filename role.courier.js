@@ -17,7 +17,6 @@ var roleCourier = {
     run: function(creep) {
 
         // Ensure sensible defaults
-        creep.memory.vis = false;
         creep.memory.vis = (creep.memory.vis === undefined) ? false : creep.memory.vis;
         creep.memory.state = (creep.memory.state === undefined) ? COURIER_IDLE : creep.memory.state;
         creep.memory.pickup_id = (creep.memory.pickup_id === undefined) ? null : creep.memory.pickup_id;
@@ -60,7 +59,7 @@ var roleCourier = {
 
         switch (creep.memory.state) {
             case COURIER_DELIVER:
-                actions.dropoff(creep)
+                actions.deliver(creep)
                 break;
 
             case COURIER_PICKUP:

@@ -133,6 +133,7 @@ var roleBuilder = {
                 break;
         }
     }
+
 }
 
 module.exports = roleBuilder

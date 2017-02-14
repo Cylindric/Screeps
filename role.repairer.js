@@ -25,7 +25,6 @@ var roleRepairer = {
         })
 
         // Ensure sensible defaults
-        creep.memory.vis = false;
         creep.memory.vis = (creep.memory.vis === undefined) ? false : creep.memory.vis;
         creep.memory.state = (creep.memory.state === undefined) ? REPAIRER_IDLE : creep.memory.state;
         creep.memory.target_id = (creep.memory.target_id === undefined) ? null : creep.memory.target_id;

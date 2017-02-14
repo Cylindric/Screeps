@@ -3,6 +3,7 @@
 var taskCharge = require('task.charge')
 var taskRepair = require('task.repair')
 var taskCollect = require('task.collect')
+var taskDeliver = require('task.deliver')
 
 var actions = {
 
