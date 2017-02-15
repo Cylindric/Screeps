@@ -14,7 +14,7 @@ module.exports.loop = function() {
         }
     }
 
-    var desired_harvesters = 2;
+    var desired_harvesters = 4;
     var desired_upgraders = 2;
     var desired_builders = 2;
     var desired_claimers = 0;

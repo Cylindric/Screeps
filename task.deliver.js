@@ -83,5 +83,3 @@ var taskDeliver = {
 }
 
 module.exports = taskDeliver // jshint ignore:line
-
-module.exports = taskDeliver // jshint ignore:line
