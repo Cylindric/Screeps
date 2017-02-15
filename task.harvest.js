@@ -2,55 +2,64 @@
 
 var taskHarvest = {
 
-    do: function(creep) {
-        var energy = null;
+  do: function(creep) {
+    var energy = null;
 
-        if (creep.memory.energy_id === null) {
+    if (creep.memory.energy_id === null) {
 
-            // Find a full source first - probably not being harvested
-            energy = creep.pos.findClosestByPath(FIND_SOURCES, {
-                filter: (s) => {
-                    return (s.energy === s.energyCapacity);
-                }
-            })
-
-            if (energy === null) {
-                // no full source found, just look for closest
-                energy = creep.pos.findClosestByPath(FIND_SOURCES)
-            }
-
-            creep.memory.energy_id = energy.id
-            console.log(creep.name + ": set new target " + creep.memory.energy_id)
-        } else {
-            energy = Game.getObjectById(creep.memory.energy_id)
+      // Find a full source first - probably not being harvested
+      var sources = creep.room.find(FIND_SOURCES)
+      var creepCount = 999999
+      for (var s in sources) {
+        // Determine how many creeps have this source as their target
+        var creeps = _.filter(Game.creeps, (creep) => creep.memory.energy_id === sources[s].id);
+        if (creeps.length < creepCount) {
+          energy = sources[s]
+          creepCount = creeps.length
         }
+      }
 
-        var result = creep.harvest(energy);
-        switch (result) {
-            case OK:
-                creep.say('🔌 ' + _.sum(creep.carry) + '/' + creep.carryCapacity)
-                if (creep.carry >= creep.carryCapacity) {
-                    creep.memory.energy_id = null
-                }
-                break;
-            case ERR_BUSY:
-                console.log(creep.name + ": source busy")
-                creep.memory.energy_id
-                break;
-            case ERR_INVALID_TARGET:
-                console.log(creep.name + ": invalid target")
-                creep.memory.energy_id = null
-                break;
-            case ERR_NOT_IN_RANGE:
-                creep.moveTo(energy, {
-                    visualizePathStyle: {
-                        stroke: '#ffaa00'
-                    }
-                });
-                break;
-        }
+      if (energy === null) {
+        // no sources found
+        return
+      }
 
+      creep.memory.energy_id = energy.id
+    } else {
+      energy = Game.getObjectById(creep.memory.energy_id)
     }
+
+    var result = creep.harvest(energy);
+    switch (result) {
+      case OK:
+        //creep.say('🔌 ' + _.sum(creep.carry) + '/' + creep.carryCapacity)
+
+        creep.room.visual.text(energy.energy, energy.pos.x + 0.5, energy.pos.y - 0.2, {
+          color: 'yellow',
+          size: 0.3
+        })
+
+        if (creep.carry >= creep.carryCapacity) {
+          creep.memory.energy_id = null
+        }
+        break;
+      case ERR_BUSY:
+        console.log(creep.name + ": source busy")
+        break;
+      case ERR_INVALID_TARGET:
+        console.log(creep.name + ": invalid target")
+        creep.memory.energy_id = null
+        break;
+      case ERR_NOT_IN_RANGE:
+        creep.moveTo(energy, {
+          visualizePathStyle: {
+            stroke: '#ffaa00'
+          }
+        });
+        break;
+    }
+
+  }
 
 }
 
