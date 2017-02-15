@@ -27,15 +27,6 @@ var roleRepairer = {
         // Ensure sensible defaults
         creep.memory.vis = (creep.memory.vis === undefined) ? false : creep.memory.vis;
         creep.memory.state = (creep.memory.state === undefined) ? REPAIRER_IDLE : creep.memory.state;
-        creep.memory.target_id = (creep.memory.target_id === undefined) ? null : creep.memory.target_id;
-        creep.memory.energy_id = (creep.memory.energy_id === undefined) ? null : creep.memory.energy_id;
-
-        /* Valid transitions
-        IDLE -> IDLE
-        IDLE -> CHARGING
-        IDLE -> REPAIRING
-        REPAIRIN -> IDLE
-        */
 
         // If we aren't doing anything, and need charging, might as well charge up.
         switch (creep.memory.state) {
@@ -58,28 +49,7 @@ var roleRepairer = {
                 break;
         }
 
-        // console.log(creep.name + ": " + creep.memory.state + " (" + creep.carry.energy + "/" + creep.carryCapacity + ")")
-
         // Now that we've determined what to do, do it...
-
-        var target = null;
-        if (creep.memory.target_id !== null) {
-            target = Game.getObjectById(creep.memory.target_id)
-            if (creep.memory.vis && target !== null) {
-                creep.room.visual.line(creep.pos, target.pos, {
-                    color: 'red'
-                })
-            }
-        }
-        var energy = null;
-        if (creep.memory.energy_id !== null) {
-            energy = Game.getObjectById(creep.memory.energy_id)
-            if (creep.memory.vis && energy !== null) {
-                creep.room.visual.line(creep.pos, energy.pos, {
-                    color: 'yellow'
-                })
-            }
-        }
 
         switch (creep.memory.state) {
             case REPAIRER_REPAIRING:

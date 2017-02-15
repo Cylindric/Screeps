@@ -4,6 +4,7 @@ var taskCharge = require('task.charge')
 var taskRepair = require('task.repair')
 var taskCollect = require('task.collect')
 var taskDeliver = require('task.deliver')
+var taskHarvest = require('task.harvest')
 
 var actions = {
 
@@ -23,6 +24,10 @@ var actions = {
 
     deliver: function(creep) {
         taskDeliver.do(creep)
+    },
+
+    harvest: function(creep) {
+        taskHarvest.do(creep)
     }
 
 }

@@ -6,11 +6,34 @@ var actions = require('actions')
 
 var roleCourier = {
 
-    build: function() {
-        newName = Game.spawns.CylSpawn.createCreep([CARRY, CARRY, MOVE], undefined, {
-            role: 'courier'
-        });
-        return newName
+    spawn: function(qty) {
+        var creeps = _.filter(Game.creeps, (creep) => creep.memory.role == 'courier');
+        var need_new = creeps.length < qty;
+        var new_name = null;
+
+        if (need_new === false) {
+            return;
+        }
+
+        if (need_new) {
+            var containers = Game.spawns.CylSpawn.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_CONTAINER);
+                }
+            });
+            if (containers.length === 0) {
+                // Only spawn couriers if we have containers
+                need_new = false;
+            }
+        }
+
+        if (need_new) {
+            new_name = Game.spawns.CylSpawn.createCreep([CARRY, CARRY, MOVE], undefined, {
+                role: 'courier'
+            });
+        }
+
+        return new_name
     },
 
     /** @param {Creep} creep **/
@@ -19,15 +42,6 @@ var roleCourier = {
         // Ensure sensible defaults
         creep.memory.vis = (creep.memory.vis === undefined) ? false : creep.memory.vis;
         creep.memory.state = (creep.memory.state === undefined) ? COURIER_IDLE : creep.memory.state;
-        creep.memory.pickup_id = (creep.memory.pickup_id === undefined) ? null : creep.memory.pickup_id;
-        creep.memory.dropoff_id = (creep.memory.dropoff_id === undefined) ? null : creep.memory.dropoff_id;
-
-        /* Valid transitions
-        IDLE -> IDLE
-        IDLE -> PICKUP
-        IDLE -> DELIVER
-        PICKUP -> DELIVER
-        */
 
         // If we aren't doing anything, and need charging, might as well charge up.
         switch (creep.memory.state) {
@@ -52,8 +66,6 @@ var roleCourier = {
                 creep.memory.state = COURIER_IDLE
                 break;
         }
-
-        // console.log(creep.name + ": " + creep.memory.state + " (" + creep.carry.energy + "/" + creep.carryCapacity + ")")
 
         // Now that we've determined what to do, do it...
 

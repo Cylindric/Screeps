@@ -15,18 +15,17 @@ module.exports.loop = function() {
     }
 
     var desired_harvesters = 2;
-    var desired_upgraders = 1;
-    var desired_builders = 3;
+    var desired_upgraders = 2;
+    var desired_builders = 2;
     var desired_claimers = 0;
-    var desired_repairers = 4;
-    var desired_couriers = 4;
+    var desired_repairers = 2;
+    var desired_couriers = 2;
 
     var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
     var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
     var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
     var claimers = _.filter(Game.creeps, (creep) => creep.memory.role == 'claimer');
     var repairers = _.filter(Game.creeps, (creep) => creep.memory.role == 'repairer');
-    var couriers = _.filter(Game.creeps, (creep) => creep.memory.role == 'courier');
 
     var msg = '';
     msg += (desired_harvesters > 0) ? 'Harvesters: ' + harvesters.length + ' ' : '';
@@ -34,7 +33,6 @@ module.exports.loop = function() {
     msg += (desired_builders > 0) ? 'Builders: ' + builders.length + ' ' : '';
     msg += (desired_repairers > 0) ? 'Repairers: ' + repairers.length + ' ' : '';
     msg += (desired_claimers > 0) ? 'Claimers: ' + claimers.length + ' ' : '';
-    msg += (desired_couriers > 0) ? 'Couriers: ' + couriers.length + ' ' : '';
     console.log(msg);
 
 
@@ -43,20 +41,6 @@ module.exports.loop = function() {
     var need_builder = builders.length < desired_builders;
     var need_claimer = claimers.length < desired_claimers;
     var need_repairer = repairers.length < desired_repairers;
-    var need_courier = couriers.length < desired_couriers;
-
-    // Don't need couriers if we don't have containers
-    if (need_courier) {
-        var containers = Game.spawns.CylSpawn.room.find(FIND_MY_STRUCTURES, {
-            filter: {
-                structureType: STRUCTURE_CONTAINER
-            }
-        });
-        if (containers.length === 0) {
-            need_courier = false;
-        }
-    }
-
 
 
     var newName;
@@ -69,15 +53,7 @@ module.exports.loop = function() {
                 role: 'harvester'
             });
         }
-        // console.log('Spawning new harvester: ' + newName);
 
-    } else if (need_courier) {
-        if (couriers.length === 0 && builders.length !== 0) {
-            builders[0].memory.role = 'courier'
-        } else {
-            // If we have any builders, repurpose them
-            roleCourier.build()
-        }
     } else if (need_upgrader) {
         newName = Game.spawns.CylSpawn.createCreep([WORK, CARRY, MOVE], undefined, {
             role: 'upgrader'
@@ -92,13 +68,11 @@ module.exports.loop = function() {
                 role: 'builder'
             });
         }
-        // console.log('Spawning new builder: ' + newName);
 
     } else if (need_claimer) {
         newName = Game.spawns.CylSpawn.createCreep([CLAIM, CLAIM, CLAIM, MOVE, MOVE], undefined, {
             role: 'claimer'
         });
-        // console.log('Spawning new claimer: ' + newName);
 
     } else if (need_repairer) {
         roleRepairer.build()

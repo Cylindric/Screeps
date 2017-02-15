@@ -6,23 +6,16 @@ const REPAIRER_REPAIRING = 'repairing';
 var taskRepair = {
 
     do: function(creep) {
-        var target
-        if (creep.memory.target_id === null) {
-            target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (
-                        structure.hits < structure.hitsMax);
-                }
-            })
-
-            if (target === null) {
-                // could not find any structures with available space.
-                return;
+        var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (
+                    structure.hits < structure.hitsMax);
             }
+        })
 
-            creep.memory.target_id = target.id
-        } else {
-            target = Game.getObjectById(creep.memory.target_id)
+        if (target === null) {
+            // could not find any structures with available space.
+            return;
         }
 
         var result = creep.repair(target);
@@ -36,7 +29,6 @@ var taskRepair = {
                 break;
             case ERR_INVALID_TARGET:
                 console.log(creep.name + ": invalid repair target")
-                creep.memory.target_id = null
                 break;
             case ERR_NOT_IN_RANGE:
                 creep.moveTo(target, {
