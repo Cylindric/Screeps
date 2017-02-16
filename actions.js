@@ -28,7 +28,7 @@ var actions = {
 
     harvest: function(creep) {
         taskHarvest.do(creep)
-    }
+    },
 
 }
 
