@@ -17,6 +17,7 @@ var map = {
         var roomFlag = Game.flags["room-" + room.name]
 
         roomFlag.memory.vis = (roomFlag.memory.vis === undefined) ? false : roomFlag.memory.vis;
+        roomFlag.memory.roadThreshold = (roomFlag.memory.roadThreshold === undefined) ? 150 : roomFlag.memory.roadThreshold;
 
         // Initialise the map counter data
         //roomFlag.memory.roadData = undefined
@@ -35,9 +36,10 @@ var map = {
 
     walkOnTile: function(creep) {
         // Ignore roads
-        var structures = creep.pos.lookFor(LOOK_STRUCTURES);
-        var roads = _.filter(structures, (s) => s.structureType == 'road');
-        if (roads.length > 0) {
+        var roads = _.filter(creep.pos.lookFor(LOOK_STRUCTURES), (s) => s.structureType == 'road');
+        var newRoads = _.filter(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES), (s) => s.structureType == 'road');
+
+        if (roads.length > 0 || newRoads.length > 0) {
             return
         }
 
@@ -45,6 +47,42 @@ var map = {
             Game.flags["room-" + creep.room.name].memory.roadData[creep.pos.x][creep.pos.y] = 1;
         }
         Game.flags["room-" + creep.room.name].memory.roadData[creep.pos.x][creep.pos.y] += 1;
+    },
+
+    findNewRoad: function(creep) {
+        var room = creep.room;
+        var roomFlag = Game.flags["room-" + room.name];
+        var targets = []
+        for (var x = 0; x < 50; x++) {
+            for (var y = 0; y < 50; y++) {
+                var count = roomFlag.memory.roadData[x][y]
+                if (count !== undefined && count !== null && count > roomFlag.memory.roadThreshold) {
+                    targets.push(new RoomPosition(x, y, room.name))
+                }
+            }
+        }
+        var closest = creep.pos.findClosestByPath(targets);
+        if (closest === null) {
+            // No road prospects found
+            return null
+        }
+
+        closest = new RoomPosition(closest.x, closest.y, room.name)
+        room.visual.circle(closest, {
+            stroke: '#ff0000',
+            fill: '#ffff00',
+            opacity: 1,
+            radius: 0.2
+        })
+
+        var result = room.createConstructionSite(closest, STRUCTURE_ROAD)
+        if (result === OK) {
+            roomFlag.memory.roadData[closest.x][closest.y] = null;
+            var structures = creep.room.lookForAt(LOOK_CONSTRUCTION_SITES, closest);
+            var roads = _.filter(structures, (s) => s.structureType == 'road');
+            roomFlag.memory.debug = roads
+            return roads[0]
+        }
     },
 
     vis: function(room) {
@@ -55,9 +93,10 @@ var map = {
         for (var x = 0; x < 50; x++) {
             for (var y = 0; y < 50; y++) {
                 var count = roomFlag.memory.roadData[x][y]
-                if (count !== undefined && count !== null) {
+                if (count !== undefined && count !== null && count > 0) {
                     room.visual.text(count, x, y, {
-                        size: 0.5
+                        size: 0.35,
+                        opacity: count / roomFlag.memory.roadThreshold
                     })
                 }
             }

@@ -46,6 +46,9 @@ var roleBuilder = {
                 break;
         }
 
+
+
+
         if (creep.memory.vis) {
             creep.room.visual.text('🚧', creep.pos.x, creep.pos.y + 0.25, {
                 color: '#00ffff',
@@ -80,6 +83,11 @@ var roleBuilder = {
                 // Otherwise anything else
                 if (target === null) {
                     target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+                }
+
+                // If we still don't have anything, look for new roads to build
+                if (target === null) {
+                    target = map.findNewRoad(creep)
                 }
 
                 if (target === null) {
