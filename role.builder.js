@@ -21,6 +21,7 @@ var roleBuilder = {
         // Ensure sensible defaults
         creep.memory.vis = (creep.memory.vis === undefined) ? false : creep.memory.vis;
         creep.memory.state = (creep.memory.state === undefined) ? BUILDER_IDLE : creep.memory.state;
+        creep.memory.restingPos = (creep.memory.restingPos === undefined) ? null : creep.memory.restingPos;
 
         // If we aren't doing anything, and need charging, might as well charge up.
         switch (creep.memory.state) {
@@ -92,15 +93,15 @@ var roleBuilder = {
 
                 if (target === null) {
                     // No building sites found
-                    var spawn = Game.spawns.CylSpawn;
-                    if (creep.pos.getRangeTo(spawn) < 3) {
+                    if (creep.pos.getRangeTo(map.getFlag) > 5) {
+                        console.log("Moving to flag to rest")
+                        creep.moveTo(map.getFlag, {
+                            visualizePathStyle: {
+                                stroke: '#ffaa00'
+                            }
+                        })
                         return;
                     }
-                    creep.moveTo(spawn, {
-                        visualizePathStyle: {
-                            stroke: '#ffaa00'
-                        }
-                    });
                     return;
                 }
 

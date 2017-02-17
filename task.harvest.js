@@ -33,7 +33,7 @@ var taskHarvest = {
         var result = creep.harvest(energy);
         switch (result) {
             case OK:
-                //creep.say('🔌 ' + _.sum(creep.carry) + '/' + creep.carryCapacity)
+                if (creep.memory.vis) creep.say('🔌 ' + _.sum(creep.carry) + '/' + creep.carryCapacity)
 
                 creep.room.visual.text(energy.energy, energy.pos.x + 0.5, energy.pos.y - 0.2, {
                     color: 'yellow',

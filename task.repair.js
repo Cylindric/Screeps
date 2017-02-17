@@ -1,4 +1,7 @@
 "use strict";
+
+var map = require('map')
+
 const REPAIRER_IDLE = 'idle';
 const REPAIRER_CHARGING = 'charging';
 const REPAIRER_REPAIRING = 'repairing';
@@ -31,6 +34,7 @@ var taskRepair = {
                 console.log(creep.name + ": invalid repair target")
                 break;
             case ERR_NOT_IN_RANGE:
+                map.walkOnTile(creep)
                 creep.moveTo(target, {
                     visualizePathStyle: {
                         stroke: '#ffaa00'

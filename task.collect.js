@@ -1,5 +1,7 @@
 "use strict";
 
+var map = require('map')
+
 var taskCollect = {
 
     do: function(creep) {
@@ -29,6 +31,7 @@ var taskCollect = {
                 console.log(creep.name + ": pickup empty")
                 break;
             case ERR_NOT_IN_RANGE:
+                map.walkOnTile(creep)
                 creep.moveTo(pickup, {
                     visualizePathStyle: {
                         stroke: '#ffaa00'
