@@ -205,6 +205,15 @@ module.exports.loop = function() {
                 radius: map.getTurretHealRange(tower)
             })
 
+            // Find enemies and smite them!
+            var hostiles = tower.room.find(FIND_HOSTILE_CREEPS);
+            if (hostiles.length > 0) {
+                var username = hostiles[0].owner.username;
+                Game.notify(`User ${username} spotted in room ${tower.room}`);
+                console.log(`User ${username} spotted in room ${tower.room}`);
+                tower.attack(hostiles[0]);
+            }
+
             // Find all objects needing repair
             var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, map.getTurretHealRange(tower), {
                 filter: function(object) {
