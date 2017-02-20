@@ -10,15 +10,19 @@ function findContainer(creep) {
         return null;
     }
 
+    // Grab the nearest container with space
     var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER);
+            return (structure.structureType == STRUCTURE_CONTAINER && _.sum(structure.store) < structure.storeCapacity);
         }
     })
+    if (!target === null && creep.memory.vis) console.log(creep.name + ": found a container at " + target.pos)
+    if (target === null && creep.memory.vis) console.log(creep.name + ": no containers with space found")
 
     // Only deliver to nearby containers
     if (target !== null) {
         if (creep.pos.getRangeTo(target) > 5) {
+            if (creep.memory.vis) console.log(creep.name + ": container too far away")
             target = null
         }
     }
@@ -29,17 +33,31 @@ function findContainer(creep) {
 function findStructure(creep) {
     var target = null;
 
-    // if no spawn was found, try towers
-    if (target === null && !map.isSpawnReserved(creep.room)) {
+    // If the spawn is reserved, it wants energy, so take it to something useful for that
+    if (target === null && map.isSpawnReserved(creep.room)) {
         target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (
-                    (structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity);
+                return ((structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_EXTENSION) && structure.energy < structure.energyCapacity);
             }
         })
+        if (creep.vis && !target === null) console.log(creep.name + ": taking energy to " + target.pos)
     }
 
-    // deliver to spawns by preference
+    // Try to find a tower with space to drop the energy at
+    if (target === null && !map.isSpawnReserved(creep.room)) {
+        var towers = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: (s) => {
+                return (
+                    (s.structureType == STRUCTURE_TOWER) && s.energy < s.energyCapacity);
+            }
+        });
+        towers = towers.sort(function(a, b) {
+            return (b.energy, a.energy)
+        });
+        target = towers[0];
+    }
+
+    // If there are no towers, take it to the nearest spawn with space
     if (target === null) {
         target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
@@ -66,9 +84,8 @@ function findStructure(creep) {
 
 var taskDeliver = {
 
-
-
     do: function(creep) {
+
         var dropoff = null
 
         // If this creep doesn't have a dropoff target yet, and is a harvester, try to find a container
@@ -80,6 +97,14 @@ var taskDeliver = {
         if (dropoff === null) {
             dropoff = findStructure(creep);
         }
+
+        if (creep.memory.vis) {
+            creep.room.visual.line(creep.pos, dropoff.pos, {
+                color: '#aa0000',
+                opacity: 0.5,
+            })
+        }
+
 
         var result = creep.transfer(dropoff, RESOURCE_ENERGY);
         switch (result) {
@@ -100,7 +125,6 @@ var taskDeliver = {
                     }
                 });
                 break;
-
         }
 
     }

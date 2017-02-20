@@ -6,14 +6,18 @@ var taskCollect = {
 
     do: function(creep) {
         var space = creep.carryCapacity - _.sum(creep.carry)
-        // Find closest energy source
-        var pickup = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (
-                    (structure.structureType == STRUCTURE_CONTAINER) && structure.store[RESOURCE_ENERGY] >= space);
-            }
-        })
 
+        // Find fullest energy source
+        var containers = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => {
+                return (
+                    (s.structureType == STRUCTURE_CONTAINER) && s.store[RESOURCE_ENERGY] >= space);
+            }
+        });
+        containers = containers.sort(function(a, b) {
+            return (a.store[RESOURCE_ENERGY], b.store[RESOURCE_ENERGY])
+        });
+        var pickup = containers[0]
         if (pickup === null) {
             // console.log(creep.name + ' could not find pickup with at least ' + space + ' energy.')
             return;
@@ -22,7 +26,7 @@ var taskCollect = {
         var result = creep.withdraw(pickup, RESOURCE_ENERGY);
         switch (result) {
             case OK:
-                creep.say('🔌 ' + _.sum(creep.carry) + '/' + creep.carryCapacity)
+                if (creep.memory.vis) creep.say('🔌 ' + _.sum(creep.carry) + '/' + creep.carryCapacity)
                 break;
             case ERR_INVALID_TARGET:
                 console.log(creep.name + ": invalid pickup " + pickup)
